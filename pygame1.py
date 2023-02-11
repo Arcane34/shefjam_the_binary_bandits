@@ -16,13 +16,14 @@ class GetImage():
         image.set_colorkey(colour)
         return image
 
-class Player(pygame.sprite.Sprite):
-    
-    def __init__(self):
-        super().__init__() #inherits sprite
-        self.image = pygame.Surface((40,40))
-        self.image.fill((240,240,240))
-        self.rect = self.image.get_rect(center = (x,y))
+class Player():
+
+    #####
+    def __init__(self,x,y,w,h):
+        self.pos = [x,y]
+        self.dim = [w,h]
+        self.rect = pygame.Rect(self.pos[0] - self.dim[0] / 2, self.pos[1] - self.dim[1] / 2, self.dim[0], self.dim[1])
+        #####
         
         #health variables:
         self.maximum_health = 1000
@@ -36,6 +37,10 @@ class Player(pygame.sprite.Sprite):
     def update(self): 
         self.health()
         self.movement()
+
+        #####
+        pygame.draw.rect(screen, (240,240,240), self.rect)
+        #####
 
     #subtract from player health
     def take_damage(self,damage):
@@ -53,19 +58,25 @@ class Player(pygame.sprite.Sprite):
 
     def movement(self):
         keys = pygame.key.get_pressed()
-    
+
+        #####
         if keys[pygame.K_LEFT]:
-            self.rect.x -= vel
+            self.pos[0] -= vel
+            self.rect = pygame.Rect(self.pos[0] - self.dim[0] / 2, self.pos[1] - self.dim[1] / 2, self.dim[0], self.dim[1])
 
         if keys[pygame.K_RIGHT] :
-            self.rect.x += vel
+            self.pos[0] += vel
+            self.rect = pygame.Rect(self.pos[0] - self.dim[0] / 2, self.pos[1] - self.dim[1] / 2, self.dim[0], self.dim[1])
 
         if keys[pygame.K_UP]:
-            self.rect.y -= vel
+            self.pos[1] -= vel
+            self.rect = pygame.Rect(self.pos[0] - self.dim[0] / 2, self.pos[1] - self.dim[1] / 2, self.dim[0], self.dim[1])
 
         if keys[pygame.K_DOWN]:
-            self.rect.y += vel
-        
+            self.pos[1] += vel
+            self.rect = pygame.Rect(self.pos[0] - self.dim[0] / 2, self.pos[1] - self.dim[1] / 2, self.dim[0], self.dim[1])
+
+        #####
 
     #draw health bar
     def health(self):
@@ -92,12 +103,20 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(screen, (255,0,0), health_bar_rect)
         pygame.draw.rect(screen, transition_color, transition_bar_rect)
         pygame.draw.rect(screen,(255,255,255), (10,45, self.health_bar_length,25),4)
+
+
+    
         
 #setup
 pygame.init()
 screen = pygame.display.set_mode((800,800))
 clock = pygame.time.Clock()
-player = pygame.sprite.GroupSingle(Player())
+
+#####
+player = Player(400,400,40,40)
+#####
+
+
 background = pygame.Color(50, 50 ,50)
 sprite_sheet_image = pygame.image.load('spritesheet.png').convert_alpha()
 BLACK = (0,0,0)
@@ -131,10 +150,17 @@ while run:
 
     #text drawing stuff
     text_surface = font.render(text, True, text_color)
-    screen.blit(text_surface, (x - 20, y - 50))
+
+    #####
+    text_width, text_height = text_surface.get_size()
+    screen.blit(text_surface, (player.pos[0] - (text_width//2), player.pos[1] - (text_height//2) - 50))
+    #####
+    
     spell = font1.render(spell_text, True, text_color)
     screen.blit(spell, (50,700))
-    player.draw(screen)
+
+    #####remove player draw
+    
     player.update()
     pygame.display.update()
     clock.tick(30)
